@@ -11,7 +11,7 @@
   <script src="lib/pdf.min.js"></script>
 </head>
 <body>
-  <!-- Loading Screen -->
+  <!-- 로딩 화면 -->
   <div id="loading-screen" class="loading-screen">
     <div class="loading-content">
       <div class="loading-spinner"></div>
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <!-- Error Screen -->
+  <!-- 에러 화면 -->
   <div id="error-screen" class="error-screen" style="display:none;">
     <div class="error-content">
       <div class="error-icon">⚠️</div>
@@ -30,19 +30,19 @@
     </div>
   </div>
 
-  <!-- Slideshow Container -->
+  <!-- 슬라이드쇼 컨테이너 -->
   <div id="slideshow-container" class="slideshow-container" style="display:none;">
-    <!-- Progress Bar -->
+    <!-- 진행 상태바 -->
     <div class="progress-bar-container">
       <div class="progress-bar" id="progress-bar"></div>
     </div>
 
-    <!-- Slide Canvas -->
+    <!-- 슬라이드 캔버스 -->
     <div class="slide-wrapper" id="slide-wrapper">
       <canvas id="slide-canvas"></canvas>
     </div>
 
-    <!-- Navigation Overlay (left/right click zones) -->
+    <!-- 네비게이션 오버레이 (좌우 클릭 영역) -->
     <div class="nav-overlay">
       <div class="nav-zone nav-prev" id="nav-prev" title="이전 슬라이드">
         <div class="nav-arrow">
@@ -60,17 +60,17 @@
       </div>
     </div>
 
-    <!-- Bottom Control Bar -->
+    <!-- 하단 컨트롤 바 -->
     <div class="control-bar" id="control-bar">
       <div class="control-bar-inner">
-        <!-- Slide Counter -->
+        <!-- 슬라이드 번호 카운터 -->
         <div class="slide-counter">
           <span id="current-page">1</span>
           <span class="counter-divider">/</span>
           <span id="total-pages">1</span>
         </div>
 
-        <!-- Center Controls -->
+        <!-- 중앙 컨트롤 (이전, 전체화면, 다음) -->
         <div class="center-controls">
           <button class="ctrl-btn" id="btn-prev" title="이전 (←)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,7 +89,7 @@
           </button>
         </div>
 
-        <!-- Right Controls -->
+        <!-- 우측 컨트롤 (그리드 목록, 나가기) -->
         <div class="right-controls">
           <button class="ctrl-btn" id="btn-grid" title="슬라이드 목록 (G)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -109,7 +109,7 @@
       </div>
     </div>
 
-    <!-- Slide Grid Overlay -->
+    <!-- 슬라이드 그리드 보기 오버레이 -->
     <div class="slide-grid-overlay" id="slide-grid-overlay" style="display:none;">
       <div class="grid-header">
         <h3>슬라이드 목록</h3>
@@ -121,7 +121,7 @@
         </button>
       </div>
       <div class="grid-container" id="grid-container">
-        <!-- Thumbnails will be added dynamically -->
+        <!-- 썸네일들이 스크립트를 통해 동적으로 추가되는 곳 -->
       </div>
     </div>
   </div>

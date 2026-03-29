@@ -48,5 +48,5 @@ Google Classroom과 Google Drive에 첨부된 PDF, PPT 프레젠테이션 파일
 - `viewer/lib/`: Mozilla의 정통 PDF 웹 렌더링 라이브러리인 PDF.js 로컬 구동 코어 파일들
 
 ---
-*개발: 최문규*
+*개발: 최문규,*
 *README.md 작성: gemini assistant*

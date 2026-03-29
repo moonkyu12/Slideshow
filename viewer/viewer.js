@@ -1,22 +1,18 @@
-// =====================================================
-// Classroom Slideshow - Viewer Logic
-// PDF.js rendering + navigation + fullscreen
-// =====================================================
+// Classroom Slideshow - 뷰어 로직
+// PDF.js 렌더링 + 네비게이션 + 전체화면 처리
 
 (function () {
   'use strict';
 
-  // ---------- Configuration ----------
+  // ---------- 환경 설정 ----------
   const CURSOR_HIDE_DELAY = 3000;
-  const PRELOAD_RANGE = 2; // preload N pages ahead/behind
+  const PRELOAD_RANGE = 2; // 앞뒤로 미리 불러올 페이지 수
 
-  // ---------- PDF.js Setup ----------
+  // PDF.js 설정
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
 
-  // ---------- DOM Elements ----------
+  // DOM 요소
   const $ = (sel) => document.querySelector(sel);
-  const loadingScreen = $('#loading-screen');
-  const loadingStatus = $('#loading-status');
   const errorScreen = $('#error-screen');
   const errorMessage = $('#error-message');
   const retryBtn = $('#retry-btn');
@@ -37,7 +33,7 @@
   const gridContainer = $('#grid-container');
   const gridClose = $('#grid-close');
 
-  // ---------- State ----------
+  // ---------- 상태 변수 ----------
   let pdfDoc = null;
   let currentPage = 1;
   let totalPages = 0;
@@ -47,7 +43,7 @@
   let cursorTimer = null;
   let isGridOpen = false;
 
-  // ---------- URL Parsing ----------
+  // ---------- URL 파싱 ----------
   function getParams() {
     const params = new URLSearchParams(window.location.search);
     return {
@@ -58,35 +54,35 @@
   }
 
   /**
-   * Build the PDF URL based on params
+   * 파라미터를 기반으로 PDF URL 생성
    */
   function buildPdfUrl(params) {
     if (params.fileId) {
-      // Google Drive file - use export URL for PPT or direct for PDF
+      // 구글 드라이브 파일 - PPT는 내보내기 URL 사용, PDF는 직접 다운로드 사용
       if (params.type === 'pptx' || params.type === 'drive') {
         return `https://docs.google.com/presentation/d/${params.fileId}/export/pdf`;
       }
-      // For PDF files on Drive, try export, then fallback
+      // 드라이브의 PDF 파일일 경우 내보내기 시도 후 폴백
       return `https://drive.google.com/uc?export=download&id=${params.fileId}`;
     }
-    
+
     if (params.url) {
       let url = params.url;
-      
-      // If it's a docs.google.com/viewer URL, extract the actual URL parameter
+
+      // docs.google.com/viewer URL일 경우, 실제 URL 파라미터 추출
       if (url.includes('docs.google.com/viewer')) {
-         const match = url.match(/url=([^&]+)/);
-         if (match) {
-             url = decodeURIComponent(match[1]);
-         }
+        const match = url.match(/url=([^&]+)/);
+        if (match) {
+          url = decodeURIComponent(match[1]);
+        }
       }
 
-      // If it's a Google Drive view URL, convert to direct download
+      // 구글 드라이브 뷰어 URL일 경우, 직접 다운로드로 변환
       const driveMatch = url.match(/(?:drive|docs)\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
       if (driveMatch) {
         return `https://drive.google.com/uc?export=download&id=${driveMatch[1]}`;
       }
-      // Google Slides URL
+      // 구글 슬라이드 URL
       const slidesMatch = url.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
       if (slidesMatch) {
         return `https://docs.google.com/presentation/d/${slidesMatch[1]}/export/pdf`;
@@ -97,7 +93,10 @@
     return null;
   }
 
-  // ---------- Show/Hide Screens ----------
+  // ---------- 화면 표시/숨김 ----------
+  const loadingScreen = $('#loading-screen');
+  const loadingStatus = $('#loading-status');
+
   function showLoading(message) {
     loadingScreen.style.display = 'flex';
     errorScreen.style.display = 'none';
@@ -116,11 +115,11 @@
     loadingScreen.style.display = 'none';
     errorScreen.style.display = 'none';
     slideshowContainer.style.display = 'block';
-    // Auto-enter fullscreen
+    // 자동으로 전체화면 진입
     requestFullscreen();
   }
 
-  // ---------- PDF Loading ----------
+  // ---------- PDF 불러오기 ----------
   async function loadPdf(url) {
     showLoading('PDF 문서를 다운로드하고 있습니다...');
 
@@ -130,22 +129,22 @@
         showError('통신 오류: ' + chrome.runtime.lastError.message);
         return;
       }
-      
+
       if (!response.success) {
-        // Fallback for docs or drive URLs if primary fetch fails
+        // 첫 번째 가져오기 실패 시 docs 또는 드라이브 URL 폴백
         if (url.includes('drive.google.com/uc?export=download') || url.includes('/export/pdf')) {
-           // We might be blocked by Google's strict viewing-only permissions or internal redirects.
-           showError('파일 다운로드가 차단되었거나 로그인 권한이 필요합니다.\n이 파일은 구글 클래스룸 원본 페이지에서만 볼 수 있도록 설정되어 있을 수 있습니다.');
+          // 구글의 엄격한 보기 전용 권한이나 내부 리다이렉트에 의해 차단되었을 수 있음.
+          showError('파일 다운로드가 차단되었거나 로그인 권한이 필요합니다.\n이 파일은 구글 클래스룸 원본 페이지에서만 볼 수 있도록 설정되어 있을 수 있습니다.');
         } else {
-           showError('파일을 가져오는 중 오류가 발생했습니다:\n' + (response.error || '알 수 없는 오류'));
+          showError('파일을 가져오는 중 오류가 발생했습니다:\n' + (response.error || '알 수 없는 오류'));
         }
         return;
       }
 
       showLoading('슬라이드를 렌더링하는 중...');
-      
+
       try {
-        // Convert Base64 dataUrl (e.g., 'data:application/pdf;base64,JVBERi...') to Uint8Array
+        // Base64 데이터 URL을 Uint8Array로 변환
         const base64Str = response.dataUrl.split(',')[1];
         const raw = atob(base64Str);
         const uint8Array = new Uint8Array(raw.length);
@@ -173,7 +172,7 @@
         await renderPage(1);
         showSlideshow();
 
-        // Preload next pages
+        // 다음 페이지 미리 불러오기
         preloadPages(1);
 
       } catch (err) {
@@ -183,7 +182,7 @@
     });
   }
 
-  // ---------- Page Rendering ----------
+  // ---------- 페이지 렌더링 ----------
   async function renderPage(pageNum) {
     if (rendering) {
       pendingPage = pageNum;
@@ -193,14 +192,14 @@
     rendering = true;
     currentPage = pageNum;
 
-    // Update UI immediately
+    // 즉시 UI 업데이트
     currentPageEl.textContent = pageNum;
     updateProgressBar();
 
     try {
       const page = await pdfDoc.getPage(pageNum);
 
-      // Calculate scale to fit the viewport
+      // 뷰포트에 맞게 스케일 계산
       const containerWidth = window.innerWidth;
       const containerHeight = window.innerHeight;
       const unscaledViewport = page.getViewport({ scale: 1 });
@@ -209,20 +208,20 @@
       const scaleY = containerHeight / unscaledViewport.height;
       const scale = Math.min(scaleX, scaleY);
 
-      // Use higher resolution for crisp rendering (device pixel ratio)
+      // 선명한 렌더링을 위해 더 높은 해상도 사용 (기기 픽셀 비율)
       const dpr = window.devicePixelRatio || 1;
       const renderScale = scale * dpr;
       const viewport = page.getViewport({ scale: renderScale });
 
-      // Set canvas dimensions
+      // 캔버스 크기 설정
       slideCanvas.width = viewport.width;
       slideCanvas.height = viewport.height;
 
-      // Display dimensions (CSS)
+      // 표시 크기 (CSS)
       slideCanvas.style.width = `${viewport.width / dpr}px`;
       slideCanvas.style.height = `${viewport.height / dpr}px`;
 
-      // Render
+      // 렌더링
       const renderContext = {
         canvasContext: ctx,
         viewport: viewport
@@ -236,7 +235,7 @@
 
     rendering = false;
 
-    // Render pending page if any
+    // 대기 중인 페이지가 있으면 렌더링
     if (pendingPage !== null) {
       const next = pendingPage;
       pendingPage = null;
@@ -244,7 +243,7 @@
     }
   }
 
-  // ---------- Preloading ----------
+  // ---------- 미리 불러오기 ----------
   async function preloadPages(currentNum) {
     for (let i = 1; i <= PRELOAD_RANGE; i++) {
       const nextPage = currentNum + i;
@@ -253,21 +252,21 @@
       if (nextPage <= totalPages && !pageCache.has(nextPage)) {
         pdfDoc.getPage(nextPage).then(page => {
           pageCache.set(nextPage, page);
-        }).catch(() => {});
+        }).catch(() => { });
       }
       if (prevPage >= 1 && !pageCache.has(prevPage)) {
         pdfDoc.getPage(prevPage).then(page => {
           pageCache.set(prevPage, page);
-        }).catch(() => {});
+        }).catch(() => { });
       }
     }
   }
 
-  // ---------- Navigation ----------
+  // ---------- 네비게이션 ----------
   function goToPage(pageNum) {
     if (pageNum < 1 || pageNum > totalPages || pageNum === currentPage) return;
 
-    // Slide transition
+    // 슬라이드 전환 연출
     slideCanvas.classList.add('transitioning');
     setTimeout(() => {
       renderPage(pageNum).then(() => {
@@ -294,7 +293,7 @@
     progressBar.style.width = `${progress}%`;
   }
 
-  // ---------- Fullscreen ----------
+  // ---------- 전체화면 ----------
   function requestFullscreen() {
     const el = document.documentElement;
     if (el.requestFullscreen) el.requestFullscreen();
@@ -318,7 +317,7 @@
     }
   }
 
-  // ---------- Slide Grid ----------
+  // ---------- 슬라이드 그리드 ----------
   async function openGrid() {
     isGridOpen = true;
     slideGridOverlay.style.display = 'block';
@@ -338,7 +337,7 @@
       item.appendChild(numberBadge);
       gridContainer.appendChild(item);
 
-      // Render thumbnail
+      // 썸네일 렌더링
       renderThumbnail(i, thumbCanvas);
 
       item.addEventListener('click', () => {
@@ -374,7 +373,7 @@
     else openGrid();
   }
 
-  // ---------- Cursor Auto-hide ----------
+  // ---------- 커서 자동 숨김 ----------
   function showCursor() {
     document.body.classList.add('show-cursor');
     slideshowContainer.classList.add('controls-visible');
@@ -388,7 +387,7 @@
     slideshowContainer.classList.remove('controls-visible');
   }
 
-  // ---------- Key Hint Flash ----------
+  // ---------- 키 입력 힌트 표시 ----------
   function showKeyHint(text) {
     const hint = document.createElement('div');
     hint.className = 'key-hint';
@@ -397,9 +396,9 @@
     setTimeout(() => hint.remove(), 800);
   }
 
-  // ---------- Event Handlers ----------
+  // ---------- 이벤트 핸들러 ----------
 
-  // Keyboard
+  // 키보드
   document.addEventListener('keydown', (e) => {
     if (isGridOpen) {
       if (e.key === 'Escape' || e.key === 'g' || e.key === 'G') {
@@ -453,10 +452,10 @@
     }
   });
 
-  // Mouse move → show cursor
+  // 마우스 이동 -> 커서 표시
   document.addEventListener('mousemove', showCursor);
 
-  // Navigation click zones
+  // 네비게이션 클릭 영역
   navPrev.addEventListener('click', (e) => {
     e.stopPropagation();
     prevPage();
@@ -469,7 +468,7 @@
     showCursor();
   });
 
-  // Control bar buttons
+  // 컨트롤 바 버튼
   btnPrev.addEventListener('click', (e) => { e.stopPropagation(); prevPage(); });
   btnNext.addEventListener('click', (e) => { e.stopPropagation(); nextPage(); });
   btnFullscreen.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreen(); });
@@ -477,7 +476,7 @@
   btnEscape.addEventListener('click', (e) => { e.stopPropagation(); window.close(); });
   gridClose.addEventListener('click', closeGrid);
 
-  // Mouse wheel
+  // 마우스 휠
   document.addEventListener('wheel', (e) => {
     if (isGridOpen) return;
     if (e.deltaY > 0) nextPage();
@@ -485,7 +484,7 @@
     showCursor();
   }, { passive: true });
 
-  // Touch support (swipe)
+  // 터치 지원 (스와이프)
   let touchStartX = 0;
   let touchStartY = 0;
 
@@ -501,14 +500,14 @@
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
 
-    // Only horizontal swipes (with enough distance)
+    // 충분한 거리를 이동한 수평 스와이프만 허용
     if (absDx > 50 && absDx > absDy) {
       if (dx < 0) nextPage();
       else prevPage();
     }
   }, { passive: true });
 
-  // Window resize → re-render current page
+  // 창 크기 조절 -> 현재 페이지 다시 렌더링
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
@@ -517,21 +516,47 @@
     }, 200);
   });
 
-  // Retry button
+  // 다시 시도 버튼
   retryBtn.addEventListener('click', () => {
     init();
   });
 
-  // Fullscreen change
+  // 전체화면 변경
   document.addEventListener('fullscreenchange', () => {
     if (pdfDoc) {
       setTimeout(() => renderPage(currentPage), 100);
     }
   });
 
-  // ---------- Initialize ----------
+  // ---------- 초기화 ----------
   function init() {
     const params = getParams();
+    const urlLower = (params.url || '').toLowerCase();
+    
+    // PPT 파일 형식 여부 판단 (파라미터 타입, 주소 내 확장자 또는 슬라이드 주소)
+    const isPpt = params.type === 'pptx' || 
+                  urlLower.includes('.ppt') || 
+                  urlLower.includes('docs.google.com/presentation');
+                  
+    if (isPpt) {
+      console.log('Classroom Slideshow: PPT 형식 감지, 구글 네이티브 뷰어로 이동합니다.');
+      let fileId = params.fileId;
+      
+      // 파일 ID가 없고 원본 주소가 있다면 정규식을 통해 ID를 강제 추출
+      if (!fileId && params.url) {
+        let match = params.url.match(/(?:drive|docs)\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+        if (!match) match = params.url.match(/presentation\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) fileId = match[1];
+      }
+      
+      if (fileId) {
+        // 구글 공식 프레젠테이션 전체화면 모드로 화면 자체를 이동 (리다이렉트)
+        window.location.replace(`https://docs.google.com/presentation/d/${fileId}/present`);
+        return; // 이 함수 종료 (PDF.js 실행 안함)
+      }
+    }
+
+    // PPT가 아닌 순수 PDF 파일 처리 로직
     const pdfUrl = buildPdfUrl(params);
 
     if (!pdfUrl) {
@@ -543,7 +568,7 @@
     loadPdf(pdfUrl);
   }
 
-  // Start
+  // 시작
   init();
 
 })();

@@ -1,9 +1,9 @@
 /* =====================================================
-   Classroom Slideshow - Viewer Styles
-   Premium slideshow presentation UI
+   Classroom Slideshow - 뷰어 스타일시트
+   프리미엄 슬라이드쇼 프레젠테이션 UI 디자인
    ===================================================== */
 
-/* ---------- Reset & Base ---------- */
+/* ---------- 기본 설정 및 초기화 ---------- */
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -46,7 +46,7 @@ body.show-cursor {
   cursor: default;
 }
 
-/* ---------- Loading Screen ---------- */
+/* ---------- 로딩 화면 ---------- */
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -84,7 +84,7 @@ body.show-cursor {
   color: var(--text-secondary);
 }
 
-/* ---------- Error Screen ---------- */
+/* ---------- 에러 화면 ---------- */
 .error-screen {
   position: fixed;
   inset: 0;
@@ -140,7 +140,7 @@ body.show-cursor {
   box-shadow: 0 4px 16px var(--accent-glow);
 }
 
-/* ---------- Slideshow Container ---------- */
+/* ---------- 슬라이드쇼 컨테이너 ---------- */
 .slideshow-container {
   position: fixed;
   inset: 0;
@@ -148,7 +148,7 @@ body.show-cursor {
   overflow: hidden;
 }
 
-/* ---------- Progress Bar ---------- */
+/* ---------- 진행 상태바 ---------- */
 .progress-bar-container {
   position: fixed;
   top: 0;
@@ -174,7 +174,7 @@ body.show-cursor {
   box-shadow: 0 0 8px var(--accent-glow);
 }
 
-/* ---------- Slide Wrapper ---------- */
+/* ---------- 슬라이드 래퍼(도화지) ---------- */
 .slide-wrapper {
   position: fixed;
   inset: 0;
@@ -194,7 +194,7 @@ body.show-cursor {
   opacity: 0;
 }
 
-/* ---------- Navigation Overlay ---------- */
+/* ---------- 네비게이션 좌우 영역 오버레이 ---------- */
 .nav-overlay {
   position: fixed;
   inset: 0;
@@ -251,7 +251,7 @@ body.show-cursor {
   background: var(--bg-glass-hover);
 }
 
-/* ---------- Control Bar ---------- */
+/* ---------- 하단 컨트롤 바 ---------- */
 .control-bar {
   position: fixed;
   bottom: 0;
@@ -287,7 +287,7 @@ body.show-cursor {
   box-shadow: var(--shadow-heavy);
 }
 
-/* Slide Counter */
+/* 슬라이드 번호 카운터 */
 .slide-counter {
   display: flex;
   align-items: center;
@@ -311,7 +311,7 @@ body.show-cursor {
   color: var(--text-secondary);
 }
 
-/* Control Buttons */
+/* 컨트롤 버튼들 */
 .center-controls,
 .right-controls {
   display: flex;
@@ -347,7 +347,7 @@ body.show-cursor {
   transform: scale(0.9);
 }
 
-/* ---------- Slide Grid Overlay ---------- */
+/* ---------- 슬라이드 전체 목록 (그리드) 오버레이 ---------- */
 .slide-grid-overlay {
   position: fixed;
   inset: 0;
@@ -446,7 +446,7 @@ body.show-cursor {
   color: var(--text-secondary);
 }
 
-/* ---------- Keyboard Hints (brief flash) ---------- */
+/* ---------- 키보드 누름 힌트 (잠깐 나타났다 사라짐) ---------- */
 .key-hint {
   position: fixed;
   top: 50%;
@@ -467,7 +467,7 @@ body.show-cursor {
   animation: keyHintPop 0.8s ease-out;
 }
 
-/* ---------- Animations ---------- */
+/* ---------- 애니메이션 정의 ---------- */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -507,7 +507,7 @@ body.show-cursor {
   }
 }
 
-/* ---------- Scrollbar ---------- */
+/* ---------- 스크롤바 디자인 ---------- */
 ::-webkit-scrollbar {
   width: 6px;
 }
