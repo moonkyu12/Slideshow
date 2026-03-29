@@ -1,0 +1,57 @@
+/* content.css - Styling for the injected Slideshow button */
+
+#classroom-slideshow-btn-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999999;
+    animation: bounceInUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto;
+}
+
+#classroom-slideshow-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #4f7df9 0%, #3a5bd9 100%);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(79, 125, 249, 0.4), 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+#classroom-slideshow-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+#classroom-slideshow-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 24px rgba(79, 125, 249, 0.5), 0 4px 8px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, #608cf9 0%, #4669e4 100%);
+}
+
+#classroom-slideshow-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(79, 125, 249, 0.4);
+}
+
+@keyframes bounceInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.9);
+    }
+    70% {
+        transform: translateY(-10px) scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
